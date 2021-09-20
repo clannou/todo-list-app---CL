@@ -1,114 +1,125 @@
 /*jshint laxbreak:true */
 (function (window) {
-	'use strict';
+  "use strict";
 
-	var htmlEscapes = {
-		'&': '&amp;',
-		'<': '&lt;',
-		'>': '&gt;',
-		'"': '&quot;',
-		'\'': '&#x27;',
-		'`': '&#x60;'
-	};
+  var htmlEscapes = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#x27;",
+    "`": "&#x60;",
+  };
 
-	var escapeHtmlChar = function (chr) {
-		return htmlEscapes[chr];
-	};
+  var escapeHtmlChar = function (chr) {
+    return htmlEscapes[chr];
+  };
 
-	var reUnescapedHtml = /[&<>"'`]/g;
-	var reHasUnescapedHtml = new RegExp(reUnescapedHtml.source);
+  var reUnescapedHtml = /[&<>"'`]/g;
+  var reHasUnescapedHtml = new RegExp(reUnescapedHtml.source);
 
-	var escape = function (string) {
-		return (string && reHasUnescapedHtml.test(string))
-			? string.replace(reUnescapedHtml, escapeHtmlChar)
-			: string;
-	};
+  var escape = function (string) {
+    return string && reHasUnescapedHtml.test(string)
+      ? string.replace(reUnescapedHtml, escapeHtmlChar)
+      : string;
+  };
 
-	/**
-	 * Sets up defaults for all the Template methods such as a default template
-	 *
-	 * @constructor
-	 */
-	function Template() {
-		this.defaultTemplate
-		=	'<li data-id="{{id}}" class="{{completed}}">'
-		+		'<div class="view">'
-		+			'<input class="toggle" type="checkbox" {{checked}}>'
-		+			'<label>{{title}}</label>'
-		+			'<button class="destroy"></button>'
-		+		'</div>'
-		+	'</li>';
-	}
+  /**
+   * Sets up defaults for all the Template methods such as a default template
+   *
+   * @constructor
+   */
+  function Template() {
+    this.defaultTemplate =
+      '<li data-id="{{id}}" class="{{completed}}">' +
+      '<div class="view">' +
+      '<input class="toggle" type="checkbox" {{checked}}>' +
+      "<label>{{title}}</label>" +
+      '<button class="destroy"></button>' +
+      "</div>" +
+      "</li>";
+  }
 
-	/**
-	 * Creates an <li> HTML string and returns it for placement in your app.
-	 *
-	 * NOTE: In real life you should be using a templating engine such as Mustache
-	 * or Handlebars, however, this is a vanilla JS example.
-	 *
-	 * @param {object} data The object containing keys you want to find in the
-	 *                      template to replace.
-	 * @returns {string} HTML String of an <li> element
-	 *
-	 * @example
-	 * view.show({
-	 *	id: 1,
-	 *	title: "Hello World",
-	 *	completed: 0,
-	 * });
-	 */
-	Template.prototype.show = function (data) {
-		var i, l;
-		var view = '';
+  /**
+   * Creates an <li> HTML string and returns it for placement in your app.
+   *
+   * NOTE: In real life you should be using a templating engine such as Mustache
+   * or Handlebars, however, this is a vanilla JS example.
+   *
+   * @param {object} data The object containing keys you want to find in the
+   *                      template to replace.
+   * @returns {string} HTML String of an <li> element
+   *
+   * @example
+   * view.show({
+   *	id: 1,
+   *	title: "Hello World",
+   *	completed: 0,
+   * });
+   */
+  Template.prototype.show = function (data) {
+    // var i, l; // SUPPRESSION CHRISTOPHE LANNOU
+    var view = "";
 
-		for (i = 0, l = data.length; i < l; i++) {
-			var template = this.defaultTemplate;
-			var completed = '';
-			var checked = '';
+    var i = data.length; // RAJOUT CHRISTOPHE LANNOU
 
-			if (data[i].completed) {
-				completed = 'completed';
-				checked = 'checked';
-			}
+    // for (i = 0, l = data.length; i < l; i++) {  // SUPPRESSION CHRISTOPHE LANNOU
 
-			template = template.replace('{{id}}', data[i].id);
-			template = template.replace('{{title}}', escape(data[i].title));
-			template = template.replace('{{completed}}', completed);
-			template = template.replace('{{checked}}', checked);
+    /* même si il est conseillé pour des raisons de performances de pré-calculer
+	  la longueur d’un array dans le paramètre d’initialisation plutôt que de le recalculer
+	  à chaque tour de boucle, cette optimisation n’est plus utile dans la plupart des cas.
+	  En effet, presque tous les moteurs JavaScript possèdent un compilateur JIT (just in time ou compilation à la volée),
+	  lequel sait optimiser ce genre de cas tout seul. */
 
-			view = view + template;
-		}
+    // MODIF POUR AMELIORATION LISIBILITE DE LA BOUCLE
+    for (i = 0; i < data.length; i++) {
+      var template = this.defaultTemplate;
+      var completed = "";
+      var checked = "";
 
-		return view;
-	};
+      if (data[i].completed) {
+        completed = "completed";
+        checked = "checked";
+      }
 
-	/**
-	 * Displays a counter of how many to dos are left to complete
-	 *
-	 * @param {number} activeTodos The number of active todos.
-	 * @returns {string} String containing the count
-	 */
-	Template.prototype.itemCounter = function (activeTodos) {
-		var plural = activeTodos === 1 ? '' : 's';
+      template = template.replace("{{id}}", data[i].id);
+      template = template.replace("{{title}}", escape(data[i].title));
+      template = template.replace("{{completed}}", completed);
+      template = template.replace("{{checked}}", checked);
 
-		return '<strong>' + activeTodos + '</strong> item' + plural + ' left';
-	};
+      view = view + template;
+    }
 
-	/**
-	 * Updates the text within the "Clear completed" button
-	 *
-	 * @param  {[type]} completedTodos The number of completed todos.
-	 * @returns {string} String containing the count
-	 */
-	Template.prototype.clearCompletedButton = function (completedTodos) {
-		if (completedTodos > 0) {
-			return 'Clear completed';
-		} else {
-			return '';
-		}
-	};
+    return view;
+  };
 
-	// Export to window
-	window.app = window.app || {};
-	window.app.Template = Template;
+  /**
+   * Displays a counter of how many to dos are left to complete
+   *
+   * @param {number} activeTodos The number of active todos.
+   * @returns {string} String containing the count
+   */
+  Template.prototype.itemCounter = function (activeTodos) {
+    var plural = activeTodos === 1 ? "" : "s";
+
+    return "<strong>" + activeTodos + "</strong> item" + plural + " left";
+  };
+
+  /**
+   * Updates the text within the "Clear completed" button
+   *
+   * @param  {[type]} completedTodos The number of completed todos.
+   * @returns {string} String containing the count
+   */
+  Template.prototype.clearCompletedButton = function (completedTodos) {
+    if (completedTodos > 0) {
+      return "Clear completed";
+    } else {
+      return "";
+    }
+  };
+
+  // Export to window
+  window.app = window.app || {};
+  window.app.Template = Template;
 })(window);
