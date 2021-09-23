@@ -67,16 +67,13 @@ describe("controller", function () {
     // TODO: write test
     // test written
 
-    var todo = {
-      id: 1,
-      title: "Todo 1",
-      completed: false,
-    };
+    var todo = [{ title: "my todo" }, { title: "my todo 2", completed: true }];
     setUpModel([todo]);
 
     subject.setView("");
 
     expect(view.render).toHaveBeenCalledWith("showEntries", [todo]);
+    expect(view.render).toHaveBeenCalledWith("setFilter", "");
   });
 
   describe("routing", function () {
